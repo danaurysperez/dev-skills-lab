@@ -1,39 +1,82 @@
-let skills
+let skills;
+let skillNames;
 
-const $button = $('button')
-const $ul = $('ul')
-const $input = $('input')
+const $button = $("button");
+const $ul = $("ul");
+const $input = $("input");
 
-$button.on("click", handleAddSkill)
-$ul.on("click", "span", handleDelete)
+//Event Listeners
+$button.on("click", handleAddSkill);
+$ul.on("click", handleDelete);
 
-// functions
-
-init()
+init();
 
 function init() {
-  skills = []
+  skillNames = getSavedSkillsFromLocalStorage();
+  skills = [];
+  for (let i = 0; i < skillNames.length; i++) {
+    const $skill = $(`<li><span>X</span>${skillNames[i]}</li>`);
+    skills.push($skill);
+  }
 
-  render()
+  render();
 }
+
 function handleAddSkill() {
-const skill = $input.val()
+  const skill = $input.val();
   if (skill) {
-    const $skill = $(`<li><span>X</span>${skill}</li>`)
-    skills.push($skill)
-    $input.val("")
-    render()
-  } else return
+    const $skill = $(`<li><span>X</span>${skill}</li>`);
+
+    skills.push($skill);
+    skillNames.push(skill);
+
+    $input.val("");
+
+    render();
+    saveSkillsToLocalStorage();
+  }
 }
 
-function handleDelete() {
-  $(this).closest('li').remove()
-  let currentSkill = $(this).closest('li')
-  skills.pop(currentSkill)
+function handleDelete(event) {
+
+  const removedSkill = event.target.closest("li");
+  removedSkill.remove();
+
+  for (let i = 0; i < skills.length; i++) {
+    if (skills[i].get(0) === removedSkill) {
+      skills.splice(i, 1);
+      skillNames.splice(i, 1);
+      saveSkillsToLocalStorage();
+      return;
+    }
+  }
 }
+
 function render() {
-  if (!skills.length) $ul.css("margin-bottom", "30px")
-  else $ul.css("margin-bottom", "0px")
 
-  $ul.html(skills)
+  if (!skills.length) {
+    $ul.css("margin-bottom", "30px");
+  } else {
+    $ul.css("margin-bottom", "0px");
+  }
+
+  $ul.html(skills);
+}
+
+function saveSkillsToLocalStorage() {
+  const skillNamesStr = JSON.stringify(skillNames);
+  localStorage.setItem("skills", skillNamesStr);
+}
+
+function getSavedSkillsFromLocalStorage() {
+  const skillNamesStr = localStorage.getItem("skills");
+  if (!skillNamesStr) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(skillNamesStr);
+  } catch (err) {
+    return [];
+  }
 }
